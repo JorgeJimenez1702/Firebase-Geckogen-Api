@@ -15,21 +15,41 @@ app.get("/hello-world", (req, res) => {
 });
 
 app.post("/api/product", async (req, res) => {
+  const {
+    productID,
+    cartID,
+    orderID,
+    productName,
+    description,
+    price
+  } = req.body;
+
   try {
     await db
       .collection("products")
-      .doc("/" + req.body.id + "/")
-      .create({ name: req.body.name });
-    return res.status(204).json();
+      .doc("/" + productID + "/")
+      .create({
+        cartID,
+        orderID,
+        productName,
+        description,
+        price,
+      });
+    return res.status(200).json({
+      message: "product created successfully"
+    });
   } catch (err) {
-    console.log(err);
-    return res.status(500).send(err);
+    return res.status(500).json({
+      err: err.message
+    });
   }
 });
 
 app.post("/api/user", async (req, res) => {
   const {
     userID,
+    cartID,
+    subscriptionID,
     name,
     email,
     password,
@@ -38,14 +58,14 @@ app.post("/api/user", async (req, res) => {
     country,
     address,
     zipcode,
-    cartID,
-    subscriptionID,
   } = req.body;
   try {
     await db
       .collection("users")
       .doc("/" + userID + "/")
       .create({
+        cartID,
+        subscriptionID,
         name,
         email,
         password,
@@ -54,15 +74,13 @@ app.post("/api/user", async (req, res) => {
         country,
         address,
         zipcode,
-        cartID,
-        subscriptionID,
       });
     return res.status(200).json({
       message: "user created successfully",
     });
   } catch {
     return res.status(500).json({
-      err,
+      err: err.message
     });
   }
 });
