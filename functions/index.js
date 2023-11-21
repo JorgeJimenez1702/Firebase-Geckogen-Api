@@ -1,10 +1,10 @@
 /* eslint-disable indent */
-const {onRequest} = require("firebase-functions/v2/https");
-// const logger = require("firebase-functions/logger");
+const { onRequest } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const express = require("express");
 const svix = require("svix");
 const bodyParser = require("body-parser");
+// const logger = require("firebase-functions/logger");
 
 const app = express();
 admin.initializeApp({
@@ -14,33 +14,10 @@ admin.initializeApp({
 const db = admin.firestore();
 
 app.get("/hello-world", (req, res) => {
-  return res.status(200).json({message: "hello world"});
+  return res.status(200).json({ message: "hello world" });
 });
 
-app.post("/api/product", async (req, res) => {
-  const {productID, cartID, orderID, productName, description, price} =
-    req.body;
 
-  try {
-    await db
-      .collection("products")
-      .doc("/" + productID + "/")
-      .create({
-        cartID,
-        orderID,
-        productName,
-        description,
-        price,
-      });
-    return res.status(200).json({
-      message: "product created successfully",
-    });
-  } catch (err) {
-    return res.status(500).json({
-      err: err.message,
-    });
-  }
-});
 
 app.post("/api/user", async (req, res) => {
   const {
@@ -84,7 +61,7 @@ app.post("/api/user", async (req, res) => {
 
 app.post(
   "/api/webhook",
-  bodyParser.raw({type: "application/json"}),
+  bodyParser.raw({ type: "application/json" }),
   async (req, res) => {
     try {
       const secret = "whsec_Jh64iasLgfiGLM56qqDefwgi53XwGy/n";
@@ -102,7 +79,7 @@ app.post(
       // console.log(wh);
       const evt = wh.verify(payloadString, svixHeaders);
       // console.log(evt);
-      const {id, ...attributes} = evt.data;
+      const { id, ...attributes } = evt.data;
       // Handle the webhooks
       const eventType = evt.type;
       if (eventType === "user.created") {
@@ -131,6 +108,8 @@ app.post(
     }
   },
 );
+
+app.use(require('./routes/terrariums.routes'));
 
 exports.app = onRequest(app);
 
