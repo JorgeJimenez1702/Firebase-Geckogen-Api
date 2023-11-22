@@ -6,11 +6,11 @@ const express = require("express");
 const svix = require("svix");
 const bodyParser = require("body-parser");
 const stripe = require("stripe")(
-  "sk_test_51O21FAAJTeML29ZUX4D4RHnYYCo228Gp9b6H0qmIIx4drlwefbIisckxJp3Fb38NQgySp4rrUFJpFcKnyvPUpmga00Mux827h8"
+  process.env.STRIPE_SECRET_KEY
 );
 // process.env.STRIPE_SECRET_KEY
 
-const endpointSecret = "whsec_5TjcVk1Ilnh7HeqyZyJEaDZgm6vrpfj2";
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 // process.env.STRIPE_ENDPOINT_SECRET;
 
 const app = express();
@@ -94,7 +94,7 @@ app.post(
   bodyParser.raw({ type: "application/json" }),
   async (req, res) => {
     try {
-      const secret = "whsec_Jh64iasLgfiGLM56qqDefwgi53XwGy/n";
+      const secret = process.env.CLERK_WEBHOOK_SECRET_KEY;
       const payloadString = JSON.stringify(req.body);
       const svixHeaders = req.headers;
       // {
