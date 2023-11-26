@@ -5,9 +5,7 @@ const admin = require("firebase-admin");
 const express = require("express");
 const svix = require("svix");
 const bodyParser = require("body-parser");
-const stripe = require("stripe")(
-  process.env.STRIPE_SECRET_KEY
-);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // process.env.STRIPE_SECRET_KEY
 
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
@@ -139,26 +137,32 @@ app.post(
   }
 );
 
-app.get("/api/orders", async (req, res) => {
+app.get("/api/orders/:userID", async (req, res) => {
   try {
-    const query = db.collection("orders");
-    const querySnapshot = await query.get();
-    const docs = querySnapshot.docs;
+    const userID = req.params.userID;
 
-    const response = docs.map((doc) => ({
-      id: doc.id,
-      date: doc.data().date,
-      productDelivery: doc.data().productDelivery,
-      productImageURL: doc.data().productImageURL,
-      productName: doc.data().productName,
-      status: doc.data().status,
-      total: doc.data().total,
-    }));
+    const ordersSnapshot = await db
+      .collection("orders")
+      .where("userID", "==", userID)
+      .get();
+    const orders = [];
 
-    return res.status(200).json(response);
+    ordersSnapshot.forEach((doc) => {
+      orders.push({
+        id: doc.id,
+        date: doc.data().date,
+        productDelivery: doc.data().productDelivery,
+        productImageURL: doc.data().productImageURL,
+        productName: doc.data().productName,
+        status: doc.data().status,
+        total: doc.data().total,
+      });
+    });
+
+    res.status(200).json(orders);
   } catch (err) {
     return res.status(400).json({
-      error: err,
+      error: err.message,
     });
   }
 });
@@ -174,6 +178,9 @@ app.post(
     try {
       event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
       const checkoutSessionCompleted = event.data.object;
+
+      // client reference id (clerk user id)
+      const userID = checkoutSessionCompleted.client_reference_id;
 
       // date
       const datetime = new Date(checkoutSessionCompleted.created * 1000);
@@ -206,6 +213,7 @@ app.post(
       const productName = product.name;
 
       await db.collection("orders").add({
+        userID,
         date,
         productDelivery,
         productImageURL,
@@ -215,8 +223,8 @@ app.post(
       });
 
       return res.status(200).json({
-        message: "Order successfully placed!"
-      })
+        message: "Order successfully placed!",
+      });
     } catch (err) {
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
