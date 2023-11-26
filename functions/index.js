@@ -206,7 +206,7 @@ app.post(
       );
 
       // get product info from the checkout session
-      const productId = session.data[0].price?.product;
+      const productId = session.data[0].price.product;
       const product = await stripe.products.retrieve(productId);
 
       const productImageURL = product.images[0];
