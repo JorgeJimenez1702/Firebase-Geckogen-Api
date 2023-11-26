@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-const { onRequest } = require("firebase-functions/v2/https");
+const {onRequest} = require("firebase-functions/v2/https");
 // const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 const express = require("express");
@@ -19,11 +19,11 @@ admin.initializeApp({
 const db = admin.firestore();
 
 app.get("/hello-world", (req, res) => {
-  return res.status(200).json({ message: "hello world" });
+  return res.status(200).json({message: "hello world"});
 });
 
 app.post("/api/product", async (req, res) => {
-  const { productID, cartID, orderID, productName, description, price } =
+  const {productID, cartID, orderID, productName, description, price} =
     req.body;
 
   try {
@@ -89,7 +89,7 @@ app.post("/api/user", async (req, res) => {
 
 app.post(
   "/api/webhook",
-  bodyParser.raw({ type: "application/json" }),
+  bodyParser.raw({type: "application/json"}),
   async (req, res) => {
     try {
       const secret = process.env.CLERK_WEBHOOK_SECRET_KEY;
@@ -107,7 +107,7 @@ app.post(
       // console.log(wh);
       const evt = wh.verify(payloadString, svixHeaders);
       // console.log(evt);
-      const { id, ...attributes } = evt.data;
+      const {id, ...attributes} = evt.data;
       // Handle the webhooks
       const eventType = evt.type;
       if (eventType === "user.created") {
@@ -134,7 +134,7 @@ app.post(
         message: err.message,
       });
     }
-  }
+  },
 );
 
 app.get("/api/orders/:userID", async (req, res) => {
@@ -169,7 +169,7 @@ app.get("/api/orders/:userID", async (req, res) => {
 
 app.post(
   "/api/webhook/stripe",
-  express.raw({ type: "application/json" }),
+  express.raw({type: "application/json"}),
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
 
@@ -184,7 +184,7 @@ app.post(
 
       // date
       const datetime = new Date(checkoutSessionCompleted.created * 1000);
-      const month = datetime.toLocaleString("en-US", { month: "short" });
+      const month = datetime.toLocaleString("en-US", {month: "short"});
       const day = datetime.getDate();
       const year = datetime.getFullYear();
       const date = `${month} ${day} ${year}`;
@@ -195,14 +195,15 @@ app.post(
       // productDelivery
       const customerDetails = checkoutSessionCompleted.customer_details;
       const address = customerDetails.address;
-      const productDelivery = `${address.line1}, ${address.city} ${address.state}, ${address.postal_code}`;
+      const productDelivery = `${address.line1}, ${address.city} 
+                               ${address.state}, ${address.postal_code}`;
 
       // total
       const total = checkoutSessionCompleted.amount_total / 100;
 
       // get checkout session
       const session = await stripe.checkout.sessions.listLineItems(
-        checkoutSessionCompleted.id
+        checkoutSessionCompleted.id,
       );
 
       // get product info from the checkout session
@@ -228,7 +229,7 @@ app.post(
     } catch (err) {
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
-  }
+  },
 );
 
 exports.app = onRequest(app);
