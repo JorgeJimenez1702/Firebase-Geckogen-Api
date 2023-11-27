@@ -7,11 +7,18 @@ const svix = require("svix");
 const bodyParser = require("body-parser");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // process.env.STRIPE_SECRET_KEY
+const cors = require("cors");
 
 const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 // process.env.STRIPE_ENDPOINT_SECRET;
 
+const allowedOrigins = ["https://geckogen-web-app.vercel.app/"];
+
 const app = express();
+app.use(cors({
+  origin: allowedOrigins,
+}));
+
 admin.initializeApp({
   credential: admin.credential.cert("./credentials.json"),
 });
@@ -19,7 +26,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 app.get("/hello-world", (req, res) => {
-  return res.status(200).json({message: "hello world"});
+  return res.status(200).send({message: "hello world from cors"});
 });
 
 app.post("/api/product", async (req, res) => {
@@ -37,11 +44,11 @@ app.post("/api/product", async (req, res) => {
         description,
         price,
       });
-    return res.status(200).json({
+    return res.status(200).send({
       message: "product created successfully",
     });
   } catch (err) {
-    return res.status(500).json({
+    return res.status(500).send({
       err: err.message,
     });
   }
@@ -77,11 +84,11 @@ app.post("/api/user", async (req, res) => {
         address,
         zipcode,
       });
-    return res.status(200).json({
+    return res.status(200).send({
       message: "user created successfully",
     });
   } catch (err) {
-    return res.status(500).json({
+    return res.status(500).send({
       err: err.message,
     });
   }
@@ -123,13 +130,13 @@ app.post(
             emailAddress: attributes.email_addresses[0].email_address,
           });
       }
-      res.status(200).json({
+      res.status(200).send({
         success: true,
         message: "Webhook received",
         attributes,
       });
     } catch (err) {
-      res.status(400).json({
+      res.status(400).send({
         success: false,
         message: err.message,
       });
@@ -158,10 +165,11 @@ app.get("/api/orders/:userID", async (req, res) => {
         total: doc.data().total,
       });
     });
+    console.log("send orders");
 
-    res.status(200).json(orders);
+    return res.status(200).send(orders);
   } catch (err) {
-    return res.status(400).json({
+    return res.status(400).send({
       error: err.message,
     });
   }
@@ -223,7 +231,7 @@ app.post(
         total,
       });
 
-      return res.status(200).json({
+      return res.status(200).send({
         message: "Order successfully placed!",
       });
     } catch (err) {
@@ -232,7 +240,7 @@ app.post(
   },
 );
 
-exports.app = onRequest(app);
+exports.api = onRequest(app);
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
