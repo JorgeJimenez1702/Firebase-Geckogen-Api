@@ -240,6 +240,18 @@ app.post(
   },
 );
 
+app.get("/api/users/:user_id", async (req, res) => {
+  try {
+    const doc = db.collection("users").doc(req.params.user_id);
+    const item = await doc.get();
+    const response = item.data();
+
+    return res.status(200).send(response);
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+});
+
 app.put("/api/users/:user_id", async (req, res) => {
   const {
     firstName,
