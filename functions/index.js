@@ -95,7 +95,7 @@ app.post("/api/user", async (req, res) => {
 });
 
 app.post(
-  "/api/webhook",
+  "/api/webhook/clerk",
   bodyParser.raw({type: "application/json"}),
   async (req, res) => {
     try {
