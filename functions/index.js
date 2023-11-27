@@ -242,6 +242,20 @@ app.post(
 
 app.put("/api/users/:user_id", async (req, res) => {
   const {
+    firstName,
+    lastName,
+    emailAddress,
+    phoneNumber,
+    state,
+    country,
+    city,
+    zipcode,
+    address,
+  } = req.body;
+
+  try {
+    const document = db.collection("users").doc(req.params.user_id);
+    await document.update({
       firstName,
       lastName,
       emailAddress,
@@ -250,26 +264,12 @@ app.put("/api/users/:user_id", async (req, res) => {
       country,
       city,
       zipcode,
-      address
-  } = req.body
-  
-  try {
-      const document = db.collection('users').doc(req.params.user_id);
-      await document.update({
-        firstName,
-        lastName,
-        emailAddress,
-        phoneNumber,
-        state,
-        country,
-        city,
-        zipcode,
-        address
-      });
-      return res.status(200).send(req.body);
+      address,
+    });
+    return res.status(200).send(req.body);
   } catch (error) {
-      console.log(error);
-      return res.status(500).send(error.message);
+    console.log(error);
+    return res.status(500).send(error.message);
   }
 });
 
