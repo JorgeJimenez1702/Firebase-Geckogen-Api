@@ -15,9 +15,11 @@ const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 const allowedOrigins = ["https://geckogen-web-app.vercel.app/"];
 
 const app = express();
-app.use(cors({
-  origin: allowedOrigins,
-}));
+app.use(
+  cors({
+    origin: allowedOrigins,
+  }),
+);
 
 admin.initializeApp({
   credential: admin.credential.cert("./credentials.json"),
@@ -281,6 +283,52 @@ app.put("/api/users/:user_id", async (req, res) => {
     return res.status(200).send(req.body);
   } catch (error) {
     console.log(error);
+    return res.status(500).send(error.message);
+  }
+});
+
+app.post("/api/mygeckos", async (req, res) => {
+  const {userId, name, specimen, weight, sex, birth} = req.body;
+  const dateObject = new Date(birth);
+  try {
+    await db.collection("mygeckos").doc().create({
+      userId,
+      name,
+      specimen,
+      weight,
+      sex,
+      dateObject,
+    });
+    return res.status(200).send({
+      message: "mygecko created successfully",
+    });
+  } catch (err) {
+    return res.status(500).send({
+      err: err.message,
+    });
+  }
+});
+
+app.get("/api/mygeckos/:userID", async (req, res) => {
+  const userID = req.params.userID;
+  try {
+    const query = await db
+      .collection("mygeckos")
+      .where("userId", "==", userID)
+      .get();
+
+    const doc = query.docs;
+
+    const response = doc.map((doc) => ({
+      userId: doc.userId,
+      name: doc.data().name,
+      specimen: doc.data().specimen,
+      weight: doc.data().weight,
+      sex: doc.data().sex,
+      dateObject: doc.data().dateObject,
+    }));
+    return res.status(200).json(response);
+  } catch (error) {
     return res.status(500).send(error.message);
   }
 });
